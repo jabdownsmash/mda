@@ -16,7 +16,7 @@ def watcher (home):
     global inGame
     mww = MemoryWatcher(home + '/MemoryWatcher/MemoryWatcher')
     for address, value in mww:
-        for name, pv in AddressObjects.get_by_address(address).parse_bytes(value):
+        for name, pv in AddressObjects.get_by_address(address).parse_string(value):
             if name == "player1Stocks":
                 player1Stocks = pv
                 # print(value)
@@ -24,9 +24,9 @@ def watcher (home):
                 player2Stocks = pv
                 # print(value)
             if name in ["player1Character","player2Character","stageID"]:
-                preData[address] = int.from_bytes(value,byteorder='big')
+                preData[address] = value
         if inGame:
-            toSave.append([address,int.from_bytes(value,byteorder='big')])
+            toSave.append([address,value])
         yield (address, value)
 
 def listener (name, value):
