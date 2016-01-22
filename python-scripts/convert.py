@@ -35,7 +35,7 @@ if __name__ == '__main__':
     # print(inputs)
 
     for x in inputs:
-        rows.append((x[0], hex(x[1])[2:].zfill(8)))
+        rows.append((x[0], hex(x[1])[2:]))
 
     if len(sys.argv) >= 3:
         outputPath = sys.argv[2]
