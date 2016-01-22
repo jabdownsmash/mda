@@ -2,7 +2,7 @@
 import sys, pickle,os, json
 from p3.melee import Melee
 from p3.addr import AddressObjects
-import msgpack
+import msgpack, struct
 
 inGame = False
 toSave = []
@@ -30,19 +30,18 @@ if __name__ == '__main__':
     path = sys.argv[1]
 
 
-    inputs = pickle.load( open( path, "rb" ) )
-    # inputs = json.load( (open( path, "r" )) )
+    # inputs = pickle.load( open( path, "rb" ) )
+    inputs = json.load( (open( path, "r" )) )
     # print(inputs)
 
     for x in inputs:
-        listener(x[0],x[1],gameState,rows)
-    print(len(rows) * (8)/1024)
+        rows.append((x[0], hex(x[1])[2:].zfill(8)))
 
     if len(sys.argv) >= 3:
         outputPath = sys.argv[2]
         # outputPath2 = sys.argv[2] + ".mp"
-        with open(outputPath, 'wb') as outfile:
+        with open(outputPath, 'w') as outfile:
             # pickle.dump(rows, outfile)
-            # json.dump(rows, outfile)
-            msgpack.dump(rows,outfile)
+            json.dump(rows, outfile)
+            # msgpack.dump(rows,outfile)
         # with open(outputPath2, 'wb') as outfile2:
