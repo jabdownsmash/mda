@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+#heatmap{
+  width:100%;
+  height:1000px;
+}
+</style>
+<body>
+<div id="heatmap"></div>
+<script src="js/heatmap.js"></script>
+<!-- <script src="js/msgpack.js"></script> -->
+<script>
+
+ function loadJSON(callback) {   
+
+    var xobj = new XMLHttpRequest();
+        // xobj.overrideMimeType("application/json");
+    xobj.open('GET', 'saves/versionc2.json', true); // Replace 'my_data' with the path to your file
+    xobj.onreadystatechange = function () {
+          if (xobj.readyState == 4 && xobj.status == "200") {
+            // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+            callback(xobj.response);
+          }
+    };
+    xobj.send(null);  
+ }
+
+
+function init() {
+ loadJSON(function(response) {
+  // Parse JSON string into object
+
+  var values = "";
+
+    // var load = pickle.loads(response);
+    // var load = msgpack.decode(response);
+    // console.log(load);
+    var load = JSON.parse(response);
+    var player = {};
+    var hasX = false;
+    var hasY = false;
+    var data = [];
+    var currentX = 0;
+    var currentY = 0;
+
+    var playerNum = "1";
+    var useFrames = true;
+    console.log(load[0]);
+    for(var i = 1; i < load.length; i++)
+    {
+      if(load[i][0] == "player" + playerNum + "X")
+      {
+        player.x = load[i][1];
+        if(!useFrames && hasY && !(player.x == currentX && player.y == currentY))
+        {
+          currentX = player.x;
+          currentY = player.y;
+          data.push(
+            {
+              x:player.x*2 + 600,
+              y:-player.y*2 + 400,
+              value:5
+            });
+          hasX = false;
+          hasY = false;
+        }
+        else
+        {
+          hasX = true;
+        }
+      }
+      else if(load[i][0] == "player" + playerNum + "Y")
+      {
+        player.y = load[i][1];
+        hasY = true;
+        if(!useFrames && hasX && !(player.x == currentX && player.y == currentY))
+        {
+          currentX = player.x;
+          currentY = player.y;
+
+          data.push(
+            {
+              x:player.x*2 + 600,
+              y:-player.y*2 + 400,
+              value:5
+            });
+          hasX = false;
+          hasY = false;
+        }
+      }
+      else if(useFrames && load[i][0] == "globalFrameCounter")
+      // else if(load[i][0] == "player1ActionState" && load[i][1] >= 65 && load[i][1] <= 69)
+      {
+        if(hasX && hasY)
+        {
+          data.push(
+            {
+              x:player.x*2 + 600,
+              y:-player.y*2 + 400,
+              value:5
+            });
+        }
+      }
+    }
+    var elem = document.getElementById('heatmap');
+    var heatmap = h337.create({
+      container: elem,
+      radius: 2,
+      // maxOpacity: 1,
+      minOpacity: 1,
+      // backgroundColor: "black",
+      // blur: .9,
+      // gradient: {
+      // //   // enter n keys between 0 and 1 here
+      // //   // for gradient color customization
+      //   '0': 'red',
+      // //   // '.8': 'red',
+      //   '.2': 'orange',
+      //   '.8': 'yellow'
+      // }
+    });
+
+    heatmap.setData({
+      max: 5,
+      data: data
+    });
+    // heatmap.configure(nuConfig);
+    // console.log('woop');
+ });
+}
+
+init();
+</script>
+</body>
