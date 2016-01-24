@@ -1,4 +1,3 @@
-
 import sys, os, json
 from p3.melee import Melee
 from p3.addr import AddressObjects
@@ -6,6 +5,7 @@ from p3.mw import MemoryWatcher
 from p3.pad import Pad,Button,Stick
 import numpy as np
 import pickle
+from clear_inputs import clear
 
 inGame = False
 toSave = []
@@ -63,4 +63,9 @@ if __name__ == '__main__':
 
     mww = MemoryWatcher(home + '/MemoryWatcher/MemoryWatcher')
     pad = Pad(home + '/Pipes/pipe')
-    melee.listen(mww,lambda x, y: listener(x,y,acceptedInputs,nnGameState,nn,pad))
+    try:
+        melee.listen(mww,lambda x, y: listener(x,y,acceptedInputs,nnGameState,nn,pad))
+    except KeyboardInterrupt:
+        # Set controller to neutral
+        clear(pad)
+        sys.exit()
