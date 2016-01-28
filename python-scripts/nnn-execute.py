@@ -6,6 +6,7 @@ from p3.pad import Pad,Button,Stick
 import numpy as np
 import pickle
 from clear_inputs import clear
+from visualpad import VisualPad
 
 inGame = False
 toSave = []
@@ -62,7 +63,7 @@ if __name__ == '__main__':
     melee = Melee()
 
     mww = MemoryWatcher(home + '/MemoryWatcher/MemoryWatcher')
-    pad = Pad(home + '/Pipes/pipe')
+    pad = VisualPad(home + '/Pipes/pipe')
     try:
         melee.listen(mww,lambda x, y: listener(x,y,acceptedInputs,nnGameState,nn,pad))
     except KeyboardInterrupt:
