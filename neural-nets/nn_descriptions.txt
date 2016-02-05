@@ -1,0 +1,11 @@
+All currently Marth vs. C. Falcon, Final Destination
+
+First four:
+nn, nn2, nn3 -> Various marth
+nn4 -> C. Falcon (Possibly units=200, learning_rate=0.02, n_iter=80)
+
+Then, all on units=200, learning_rate=0.02, n_iter=80:
+nn5 -> Only consider action state of both players
+nn6 -> Marth with only considering x and y position of both players
+nn7 -> C. Falcon and Marth everything ''
+nn8 -> '' no self, enemy everything
