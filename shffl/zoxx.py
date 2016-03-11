@@ -57,20 +57,20 @@ class FrameIndicator(QtGui.QWidget):
 
         for i in range(self.numFrames):
             if self.state == 'blank':
-                painter.setBrush(QtGui.QColor(55,55,55,255))
+                painter.setPen(QtGui.QColor(55,55,55,255))
                 painter.setBrush(QtGui.QColor(55,55,55,255))
             else: 
                 if (i == 0 and self.frame <= -self.center and self.center > 0) or (i - self.center == self.frame and self.frame < 0):
-                    painter.setBrush(QtGui.QColor(255,55,55,255))
-                    painter.setBrush(QtGui.QColor(255,55,55,255))
-                elif (i == self.numFrames and self.frame >= self.center and self.center < (self.numFrames - 1)) or (i - self.center == self.frame and self.frame > 0):
+                    painter.setPen(QtGui.QColor(55,55,255,255))
                     painter.setBrush(QtGui.QColor(55,55,255,255))
-                    painter.setBrush(QtGui.QColor(55,55,255,255))
+                elif ((i == self.numFrames - 1) and (self.frame >= self.numFrames - self.center) and self.center < (self.numFrames - 1)) or (i - self.center == self.frame and self.frame > 0):
+                    painter.setPen(QtGui.QColor(255,55,55,255))
+                    painter.setBrush(QtGui.QColor(255,55,55,255))
                 elif self.frame == 0 and i == self.center:
-                    painter.setBrush(QtGui.QColor(255,255,255,255))
+                    painter.setPen(QtGui.QColor(255,255,255,255))
                     painter.setBrush(QtGui.QColor(255,255,255,255))
                 else:
-                    painter.setBrush(QtGui.QColor(55,55,55,255))
+                    painter.setPen(QtGui.QColor(55,55,55,255))
                     painter.setBrush(QtGui.QColor(55,55,55,255))
             # painter.drawRect(QtCore.QRect(0, i * self.height()/self.numFrames, self.width(), self.height()/self.numFrames - self.height()/21))
             painter.drawRect(QtCore.QRect(i * self.width()/self.numFrames, 0, self.width()/self.numFrames - self.width()/21, self.height() - 1))
