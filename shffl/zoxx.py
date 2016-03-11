@@ -6,12 +6,14 @@ from PySide import QtCore, QtGui
 from p3.state_manager import StateManager
 from p3.state import State, Menu
 from p3.memory_watcher import MemoryWatcher
+from transitions import Machine
 
 class Container(QtGui.QWidget):
-    def __init__(self, board, closeCallback, parent=None):
+    def __init__(self, board, closeCallback, frameIndicator, parent=None):
         QtGui.QWidget.__init__(self, parent)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setMinimumSize(1000,500)
         quit = QtGui.QPushButton("Calibrate")
         quit.resize(75, 30)
         quit.setFont(QtGui.QFont("Times", 18, QtGui.QFont.Bold))
@@ -24,6 +26,7 @@ class Container(QtGui.QWidget):
         # board.show()
         gridLayout = QtGui.QGridLayout()
         gridLayout.addWidget(quit, 0, 0)
+        gridLayout.addWidget(frameIndicator, 0, 1)
         gridLayout.addWidget(board, 1, 0, 2, 2)
         gridLayout.setColumnStretch(1, 10)
         self.setLayout(gridLayout)
@@ -32,6 +35,46 @@ class Container(QtGui.QWidget):
 
     def closeEvent(self, event):
         self.ccb()
+
+class FrameIndicator(QtGui.QWidget):
+    def __init__(self, parent=None):
+        QtGui.QWidget.__init__(self, parent)
+
+        self.frame = 0
+        self.numFrames = 7
+        self.frameCounter = -1
+        self.center = (self.numFrames - 1)/2
+
+        self.machine = Machine(model=self, states=['blank','show'], initial='blank')
+        self.machine.add_transition(trigger='setFrame', source=['blank','show'], dest='show', before='setRects')
+
+    def setRects(self,frame):
+        self.frame = frame
+        self.update()
+
+    def paintEvent(self,event):
+        painter = QtGui.QPainter(self)
+
+        for i in range(self.numFrames):
+            if self.state == 'blank':
+                painter.setBrush(QtGui.QColor(55,55,55,255))
+                painter.setBrush(QtGui.QColor(55,55,55,255))
+            else: 
+                if (i == 0 and self.frame <= -self.center and self.center > 0) or (i - self.center == self.frame and self.frame < 0):
+                    painter.setBrush(QtGui.QColor(255,55,55,255))
+                    painter.setBrush(QtGui.QColor(255,55,55,255))
+                elif (i == self.numFrames and self.frame >= self.center and self.center < (self.numFrames - 1)) or (i - self.center == self.frame and self.frame > 0):
+                    painter.setBrush(QtGui.QColor(55,55,255,255))
+                    painter.setBrush(QtGui.QColor(55,55,255,255))
+                elif self.frame == 0 and i == self.center:
+                    painter.setBrush(QtGui.QColor(255,255,255,255))
+                    painter.setBrush(QtGui.QColor(255,255,255,255))
+                else:
+                    painter.setBrush(QtGui.QColor(55,55,55,255))
+                    painter.setBrush(QtGui.QColor(55,55,55,255))
+            # painter.drawRect(QtCore.QRect(0, i * self.height()/self.numFrames, self.width(), self.height()/self.numFrames - self.height()/21))
+            painter.drawRect(QtCore.QRect(i * self.width()/self.numFrames, 0, self.width()/self.numFrames - self.width()/21, self.height() - 1))
+
 
 class Melee(QtGui.QWidget):
     def __init__(self, parent=None):
@@ -90,11 +133,13 @@ class Melee(QtGui.QWidget):
                 self.calibrating -= 1
         self.update()
 
-def listener (state):
-    pass
-    # print(str(state.action_state) + " " + str(state.fastfall_velocity) + " " + str(state.vertical_velocity))
-    if state.players[0].vertical_velocity < 0 and state.players[0].vertical_velocity > -state.players[0].fastfall_velocity:
-        print('hey')
+def listener (state,fi):
+    # print(str(state.players[0].action_state) + " " + str(state.players[0].fastfall_velocity) + " " + str(state.players[0].vertical_velocity))
+    if state.players[0].vertical_velocity < 0 and state.players[0].vertical_velocity + state.players[0].fastfall_velocity > 0:
+        fi.frameCounter += 1
+        fi.setFrame(fi.frameCounter)
+    else:
+        fi.frameCounter = -1
 
 def start(setup):
 
@@ -106,7 +151,6 @@ def start(setup):
     sm = StateManager(state)
 
     # state.players[0].hitlag_counter_changed.append(listener)
-    # state.players[0].vertical_velocity_changed.append(listener)
 
     locationsTxt = ''
     for i in sm.locations():
@@ -124,7 +168,12 @@ def start(setup):
     app = QtGui.QApplication(sys.argv)
 
     board = Melee()
-    cont = Container(board, exitHandler)
+
+    fi = FrameIndicator()
+    fi.center = 0
+    state.players[0].vertical_velocity_changed.append(lambda x: listener(x,fi))
+
+    cont = Container(board, exitHandler,fi)
     cont.show()
     setup(state,board,cont)
     # board.texts.append((200,350,"hello"))
